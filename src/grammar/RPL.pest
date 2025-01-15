@@ -1,0 +1,66 @@
+// RPL Keywords
+Use     = @{ "use" ~ !WordFollowing }
+Import  = @{ "import" ~ !WordFollowing }
+Pattern = @{ "pattern" ~ !WordFollowing }
+Patt    = @{ "patt" ~ !WordFollowing }
+Util    = @{ "util" ~ !WordFollowing }
+Meta    = @{ "meta" ~ !WordFollowing }
+
+// Reserved words
+Cstr    = @{ "cstr" ~ !WordFollowing }
+Diag    = @{ "diag" ~ !WordFollowing }
+
+// Space and Comment
+COMMENT = _{ "//" ~ (!(NEWLINE) ~ ANY)* | "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+
+// Symbols
+LeftCurlyBracket  = @{ "{" }
+RightCurlyBracket = @{ "}" }
+LeftSquareBracket = @{ "[" }
+RightSquareBracket= @{ "]" }
+Dollar            = @{ "$" }
+Assign            = @{ "=" }
+Comma             = @{ "," }
+Dot               = @{ "." }
+Colon             = @{ ":" }
+SemiColon         = @{ ";" }
+Hash              = @{ "#" }
+At                = @{ "@" }
+
+// place holder
+PlaceHolder       = @{ "_" }
+
+// Identifier/ Word Related
+WordLeading = @{ 'a' .. 'z' | 'A' .. 'Z' | '\u{4e00}'..'\u{9FA5}'}
+WordFollowing = @{ WordLeading | "_" | "-" | '0' .. '9' }
+Word = @{ WordLeading ~ (WordFollowing)* }
+
+// RPL identifier and meta variables
+rplIdentifier = @{ Word | PlaceHolder }
+rplMetaVariable = @{ Dollar ~ Word }
+
+// RPL Item 
+pattBlockItem = { rplIdentifier ~ "=" ~ rplMetaVariable }
+
+// RPL Blocks
+pattBlock = {
+    Patt ~ LeftCurlyBracket ~ (pattBlockItem)* ~ RightCurlyBracket
+}
+utilBlock = {
+    Util ~ LeftCurlyBracket ~ (pattBlockItem)* ~ RightCurlyBracket
+}
+Block = _{ pattBlock | utilBlock }
+
+// RPL Header
+rplHeader = { Pattern ~ rplIdentifier }
+
+// RPL Pattern
+rplPattern = { rplHeader ~ Block* }
+
+// RPL File entry
+main = { SOI ~ rplPattern ~ EOI }
+
+
+
+
