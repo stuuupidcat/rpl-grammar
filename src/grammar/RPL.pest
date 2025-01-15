@@ -1,91 +1,124 @@
 // RPL Keywords
-kw_import  = @{ "import" ~ !WordFollowing }
+
 kw_pattern = @{ "pattern" ~ !WordFollowing }
 kw_patt    = @{ "patt" ~ !WordFollowing }
 kw_util    = @{ "util" ~ !WordFollowing }
-kw_meta    = @{ "meta" ~ !WordFollowing }
+
 
 // Reserved words
 kw_cstr    = @{ "cstr" ~ !WordFollowing }
 kw_diag    = @{ "diag" ~ !WordFollowing }
+kw_meta    = @{ "meta" ~ !WordFollowing }
+kw_import  = @{ "import" ~ !WordFollowing }
 
 // Rust Keywords
-kw_self   = @{ "self" ~ !WordFollowing }
-kw_Self   = @{ "Self" ~ !WordFollowing }
-kw_fn     = @{ "fn" ~ !WordFollowing }
-kw_mut    = @{ "mut" ~ !WordFollowing }
-kw_const  = @{ "const" ~ !WordFollowing }
-kw_static = @{ "static" ~ !WordFollowing }
-kw_lang   = @{ "lang" ~ !WordFollowing }
-kw_as     = @{ "as" ~ !WordFollowing }
-kw_crate  = @{ "crate" ~ !WordFollowing }
-kw_use    = @{ "use" ~ !WordFollowing }
+kw_self         = @{ "self" ~ !WordFollowing }
+kw_Self         = @{ "Self" ~ !WordFollowing }
+kw_fn           = @{ "fn" ~ !WordFollowing }
+kw_mut          = @{ "mut" ~ !WordFollowing }
+kw_const        = @{ "const" ~ !WordFollowing }
+kw_static       = @{ "static" ~ !WordFollowing }
+kw_lang         = @{ "lang" ~ !WordFollowing }
+kw_as           = @{ "as" ~ !WordFollowing }
+kw_crate        = @{ "crate" ~ !WordFollowing }
+kw_use          = @{ "use" ~ !WordFollowing }
+kw_type         = @{ "type" ~ !WordFollowing }
+kw_let          = @{ "let" ~ !WordFollowing }
+kw_move         = @{ "move" ~ !WordFollowing }
+kw_copy         = @{ "copy" ~ !WordFollowing }
+kw_Len          = @{ "Len" ~ !WordFollowing }
+kw_PtrToPtr     = @{ "PtrToPtr" ~ !WordFollowing }
+kw_IntToInt     = @{ "IntToInt" ~ !WordFollowing }
+kw_Transmute    = @{ "Transmute" ~ !WordFollowing }
+kw_Add          = @{ "Add" ~ !WordFollowing }
+kw_Sub          = @{ "Sub" ~ !WordFollowing }
+kw_Mul          = @{ "Mul" ~ !WordFollowing }
+kw_Div          = @{ "Div" ~ !WordFollowing }
+kw_Rem          = @{ "Rem" ~ !WordFollowing }
+kw_Lt           = @{ "Lt" ~ !WordFollowing }
+kw_Le           = @{ "Le" ~ !WordFollowing }
+kw_Gt           = @{ "Gt" ~ !WordFollowing }
+kw_Ge           = @{ "Ge" ~ !WordFollowing }
+kw_Eq           = @{ "Eq" ~ !WordFollowing }
+kw_Ne           = @{ "Ne" ~ !WordFollowing }
+kw_Offset       = @{ "Offset" ~ !WordFollowing }
+kw_SizeOf       = @{ "SizeOf" ~ !WordFollowing }
+kw_AlignOf      = @{ "AlignOf" ~ !WordFollowing }
+kw_Neg          = @{ "Neg" ~ !WordFollowing }
+kw_Not          = @{ "Not" ~ !WordFollowing }
+kw_PtrMetadata  = @{ "PtrMetadata" ~ !WordFollowing }
+kw_discriminant = @{ "discriminant" ~ !WordFollowing }
+kw_Ctor         = @{ "Ctor" ~ !WordFollowing }
+kw_from         = @{ "from" ~ !WordFollowing }
+kw_of           = @{ "of" ~ !WordFollowing }
+kw_raw          = @{ "raw" ~ !WordFollowing }
 
 // Space and Comment
-COMMENT = _{ "//" ~ (!(NEWLINE) ~ ANY)* | "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+COMMENT    = _{ "//" ~ (!(NEWLINE) ~ ANY)* | "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
 
 // Symbols
-LeftBrace         = @{ "{" }
-RightBrace        = @{ "}" }
-LeftBracket       = @{ "[" }
-RightBracket      = @{ "]" }
-LeftParenthesis   = @{ "(" }
-RightParenthesis  = @{ ")" }
-LessThan          = @{ "<" }
-GreaterThan       = @{ ">" }
-Dollar            = @{ "$" }
-Assign            = @{ "=" }
-Comma             = @{ "," }
-Dot               = @{ "." }
-Dot2              = @{ ".." }
-Colon             = @{ ":" }
-Colon2            = @{ "::" }
-SemiColon         = @{ ";" }
-Hash              = @{ "#" }
-At                = @{ "@" }
-Tilde             = @{ "~" }
-Ref               = @{ "&" }
-HashTilde         = @{ "#~" }
-Bang              = @{ "!" }
-Star              = @{ "*" }
-Quote             = @{ "'" }
-Quote2            = @{ "\"" }
-Arrow             = @{ "->" }
+LeftBrace    = @{ "{" }
+RightBrace   = @{ "}" }
+LeftBracket  = @{ "[" }
+RightBracket = @{ "]" }
+LeftParen    = @{ "(" }
+RightParen   = @{ ")" }
+LessThan     = @{ "<" }
+GreaterThan  = @{ ">" }
+Dollar       = @{ "$" }
+Assign       = @{ "=" }
+Comma        = @{ "," }
+Dot          = @{ "." }
+Dot2         = @{ ".." }
+Colon        = @{ ":" }
+Colon2       = @{ "::" }
+SemiColon    = @{ ";" }
+Hash         = @{ "#" }
+
+Tilde        = @{ "~" }
+And          = @{ "&" }
+HashTilde    = @{ Hash ~ Tilde }
+Bang         = @{ "!" }
+Star         = @{ "*" }
+Arrow        = @{ "->" }
+Quote        = @{ "'" }
+Quote2       = @{ "\"" }
+At           = @{ "@" }
 
 // place holder
-PlaceHolder       = @{ "_" }
+PlaceHolder = @{ "_" }
 
 // Literal
-Literal = @{ 
-    Integer 
-  | String 
+Literal = @{
+    Integer
+  | String
 }
 
-Integer = ${ 
-    (("0x" ~ ('0'..'9' | 'a'..'f' | 'A'..'F')+) | ('0'..'9')+) ~ !(WordFollowing | Dot ~ ('0'..'9')) 
+Integer = ${
+    (("0x" ~ ('0'..'9' | 'a'..'f' | 'A'..'F')+) | ('0'..'9')+) ~ !(WordFollowing | Dot ~ ('0'..'9'))
 }
-String = @{ 
-    "\"" ~ (!"\"" ~ ANY)* ~ "\"" 
+String  = @{
+    "\"" ~ (!"\"" ~ ANY)* ~ "\""
 }
 
 // Identifier/ Word Related
-WordLeading = @{ 'a' .. 'z' | 'A' .. 'Z' | '\u{4e00}'..'\u{9FA5}'}
+WordLeading   = @{ 'a' .. 'z' | 'A' .. 'Z' | '\u{4e00}'..'\u{9FA5}' }
 WordFollowing = @{ WordLeading | "_" | "-" | '0' .. '9' }
-Word = @{ WordLeading ~ (WordFollowing)* }
+Word          = @{ WordLeading ~ (WordFollowing)* }
 
 // RPL identifier and meta variables
-Identifier = @{ Word }
+Identifier   = @{ Word }
 MetaVariable = @{ Dollar ~ Word }
 
 // MetaVariable Declaration
-MetaVariableDecl = { MetaVariable ~ Colon ~ Word }
-MetaVariableDeclList = { 
-    LeftBracket ~ (MetaVariableDecl ~ Comma)* ~ MetaVariableDecl ~ Comma? ~ RightBracket 
+MetaVariableDecl     = { MetaVariable ~ Colon ~ Identifier }
+MetaVariableDeclList = {
+    LeftBracket ~ (MetaVariableDecl ~ Comma)* ~ MetaVariableDecl ~ Comma? ~ RightBracket
 }
 
 // Attributes
-PreItemAttribute = { Hash ~ LeftBracket ~ (Word ~ Comma)* ~ Word ~ Comma? ~ RightBracket }
+PreItemAttribute  = { Hash ~ LeftBracket ~ (Word ~ Comma)* ~ Word ~ Comma? ~ RightBracket }
 PostItemAttribute = { HashTilde ~ LeftBracket ~ (Word ~ Comma)* ~ Word ~ Comma? ~ RightBracket }
 
 // Rust Items
@@ -101,10 +134,10 @@ Region = {
     Quote ~ (PlaceHolder | kw_static)
 }
 
-// FIXME: Identifier 
+// FIXME: Identifier
 QSelf = {
-    LessThan ~ Type ~ kw_as ~ (Identifier | MetaVariable) ~ GreaterThan 
-} 
+    LessThan ~ Type ~ kw_as ~ (Identifier | MetaVariable) ~ GreaterThan
+}
 
 Path = {
     PathLeading? ~ PathSegment ~ (Colon2 ~ PathSegment)*
@@ -132,19 +165,19 @@ TypePath = {
 }
 
 Konst = {
-    Literal | TypePath
-}
-
-BracedKonst = {
-    LeftBrace ~ Konst ~ RightBrace
+    Literal
+  | TypePath
 }
 
 GenericConst = {
-    BracedKonst | Konst
+    LeftBrace ~ Konst ~ RightBrace
+  | Konst
 }
 
 GenericArgument = {
-    Region | Type | GenericConst
+    Region
+  | Type
+  | GenericConst
 }
 
 AngleBracketedGenericArguments = {
@@ -168,7 +201,7 @@ TypeNever = {
 }
 
 TypeParen = {
-    LeftParenthesis ~ Type ~ RightParenthesis
+    LeftParen ~ Type ~ RightParen
 }
 
 TypePtr = {
@@ -176,7 +209,7 @@ TypePtr = {
 }
 
 TypeReference = {
-    Ref ~ Region? ~ PtrMutability? ~ Type
+    And ~ Region? ~ PtrMutability? ~ Type
 }
 
 TypeSlice = {
@@ -184,7 +217,7 @@ TypeSlice = {
 }
 
 TypeTuple = {
-    LeftParenthesis ~ (Type ~ Comma)* ~ Type ~ Comma? ~ RightParenthesis
+    LeftParen ~ (Type ~ Comma)* ~ Type ~ Comma? ~ RightParen
 }
 
 TypeMetaVariable = {
@@ -207,11 +240,11 @@ Type = {
 }
 
 SelfParam = {
-    Ref? ~ Mutability ~ kw_self ~ (Colon ~ Type)?
+    And? ~ Mutability ~ kw_self ~ (Colon ~ Type)?
 }
 
 FnParam = {
-    SelfParam 
+    SelfParam
   | NormalParam
   | Dot2
 }
@@ -224,13 +257,257 @@ NormalParam = {
     ParamPat? ~ Colon ~ Type
 }
 
-FnSig = { 
-    kw_fn ~ (Identifier | PlaceHolder) ~ LeftParenthesis ~ (FnParam ~ Comma)* ~ FnParam ~ Comma? ~ RightParenthesis ~ FnRet
+MirPlaceLocal = {
+    kw_self
+  | MetaVariable
+  | PlaceHolder
+}
+
+MirPlaceParen = {
+    LeftParen ~ MirPlace ~ RightParen
+}
+
+MirPlaceDeref = {
+    Star ~ MirPlace
+}
+
+MirPlaceField = {
+    Dot ~ (MetaVariable | Identifier | Integer)
+}
+
+MirPlaceIndex = {
+    LeftBracket ~ Identifier ~ RightBracket
+}
+
+// FIXME
+MirPlaceConstIndex = {
+    LeftBracket ~ Identifier ~ RightBracket ~ kw_of ~ Integer
+}
+
+// FIXME
+MirPlaceSubslice = {
+    LeftBracket ~ Identifier? ~ Colon ~ Identifier? ~ RightBracket
+}
+
+MirPlaceDowncast = {
+    kw_as ~ (MetaVariable | Identifier)
+}
+
+MirBasicPlace = {
+    MirLocalDecl
+  | MirPlaceParen
+  | MirPlaceDeref
+}
+
+MirPlaceSuffix = {
+  
+  | MirPlaceField
+  | MirPlaceIndex
+  | MirPlaceConstIndex
+  | MirPlaceSubslice
+  | MirPlaceDowncast
+}
+
+MirPlace = {
+    MirBasicPlace ~ MirPlaceSuffix*
+}
+
+MirOperandMove = {
+    kw_move ~ MirPlace
+}
+
+MirOperandCopy = {
+    kw_copy ~ MirPlace
+}
+
+MirOperandConstant = {
+    kw_const ~ (Literal | LangItemWithArgs | TypePath)
+}
+
+MirOperand = {
+    PlaceHolder
+  | Dot2
+  | MirOperandMove
+  | MirOperandCopy
+  | MirOperandConstant
+}
+
+MirRvalueUse = {
+    LeftParen ~ MirOperand ~ RightParen
+  | MirOperand
+}
+
+MirRvalueRepeat = {
+    LeftBracket ~ MirOperand ~ SemiColon ~ Integer ~ RightBracket
+}
+
+MirRvalueRef = {
+    And ~ Region? ~ Mutability ~ MirPlace
+}
+
+MirRvalueRawPtr = {
+    And ~ kw_raw ~ PtrMutability ~ MirPlace
+}
+
+MirRvalueLen = {
+    kw_Len ~ LeftParen ~ MirPlace ~ RightParen
+}
+
+MirCastKind = {
+    kw_PtrToPtr
+  | kw_IntToInt
+  | kw_Transmute
+}
+
+MirRvalueCast = {
+    MirOperand ~ kw_as ~ Type ~ LeftParen ~ MirCastKind ~ RightParen
+}
+
+MirBinOp = {
+    kw_Add
+  | kw_Sub
+  | kw_Mul
+  | kw_Div
+  | kw_Rem
+  | kw_Lt
+  | kw_Le
+  | kw_Gt
+  | kw_Ge
+  | kw_Eq
+  | kw_Ne
+  | kw_Offset
+}
+
+MirRvalueBinOp = {
+    MirBinOp ~ LeftParen ~ MirOperand ~ Comma ~ MirOperand ~ RightParen
+}
+
+MirNullOp = {
+    kw_SizeOf
+  | kw_AlignOf
+}
+
+MirRvalueNullOp = {
+    MirNullOp ~ LeftParen ~ Type ~ RightParen
+}
+
+MirUnOp = {
+    kw_Neg
+  | kw_Not
+  | kw_PtrMetadata
+}
+
+MirRvalueUnOp = {
+    MirUnOp ~ LeftParen ~ MirOperand ~ RightParen
+}
+
+MirRvalueDiscriminant = {
+    kw_discriminant ~ LeftParen ~ MirPlace ~ RightParen
+}
+
+MirAggregateArray = {
+    LeftBracket ~ (MirOperand ~ Comma)* ~ MirOperand ~ Comma? ~ RightBracket
+}
+
+MirAggregateTuple = {
+    LeftParen ~ (MirOperand ~ Comma)* ~ MirOperand ~ Comma? ~ RightParen
+}
+
+PathOrLangItem = {
+    Path
+  | LangItemWithArgs
+}
+
+MirAggregateAdtStructField = {
+    Identifier ~ Colon ~ MirOperand
+}
+
+MirAggregateAdtStruct = {
+    PathOrLangItem ~ LeftBrace ~ (MirAggregateAdtStructField ~ Comma)* ~ MirAggregateAdtStructField ~ Comma? ~ RightBrace
+}
+
+MirAggregateAdtTuple = {
+    Hash ~ LeftBracket ~ kw_Ctor ~ RightBracket ~ Path ~ LeftParen ~ (MirOperand ~ Comma)* ~ MirOperand ~ Comma? ~ RightParen
+}
+
+MirAggregateAdtUnit = {
+    PathOrLangItem
+}
+
+MirAggregateRawPtr = {
+    TypePtr ~ kw_from ~ LeftParen ~ MirOperand ~ Comma ~ MirOperand ~ RightParen
+}
+
+MirRvalueAggregate = {
+    MirAggregateArray
+  | MirAggregateTuple
+  | MirAggregateAdtStruct
+  | MirAggregateAdtTuple
+  | MirAggregateAdtUnit
+  | MirAggregateRawPtr
+}
+
+MirRvalue = {
+    PlaceHolder
+  | MirRvalueUse
+  | MirRvalueRepeat
+  | MirRvalueRef
+  | MirRvalueRawPtr
+  | MirRvalueLen
+  | MirRvalueCast
+  | MirRvalueBinOp
+  | MirRvalueNullOp
+  | MirRvalueUnOp
+  | MirRvalueDiscriminant
+  | MirRvalueAggregate // | ShallowInitBox
+  // | CopyForDeref
+}
+
+MirFnOprand = {
+    (MirOperandCopy ~ Comma)* ~ MirOperandCopy ~ Comma? ~ RightParen
+  | (MirOperandMove ~ Comma)* ~ MirOperandMove ~ Comma? ~ RightParen
+  | TypePath
+  | LangItemWithArgs
+  | MetaVariable
+}
+
+MirCall = {
+    MirFnOprand ~ LeftParen ~ (MirOperand ~ Comma)* ~ MirOperand ~ Comma? ~ RightParen
+}
+
+MirRvalueOrCall = {
+    MirRvalue
+  | MirCall
+}
+
+MirTypeDecl = {
+    kw_type ~ Identifier ~ Assign ~ Type ~ SemiColon
+}
+
+MirLocalDecl = {
+    kw_let ~ Mutability ~ MetaVariable ~ Colon ~ Type ~ (Assign ~ MirRvalueOrCall)? ~ SemiColon
+}
+
+UsePath = {
+    kw_use ~ Path ~ SemiColon
+}
+
+MirDecl = {
+    MirTypeDecl
+  | MirLocalDecl
+}
+
+MirBody = {
+    (MirDecl)* // ~ (MirStmt)*
+}
+
+FnSig = {
+    kw_fn ~ (Identifier | PlaceHolder) ~ LeftParen ~ (FnParam ~ Comma)* ~ FnParam ~ Comma? ~ RightParen ~ FnRet
 }
 
 FnBody = {
     SemiColon
-  // | MirBody
+  | LeftBrace ~ MirBody ~ RightBrace
 }
 
 FnRet = {
@@ -241,17 +518,17 @@ Fn = { FnSig ~ FnBody }
 
 RustItem = { Fn }
 
-// patt block Item 
-pattBlockItem = { Identifier ~ MetaVariableDeclList? ~ Assign ~ PreItemAttribute? ~ RustItem ~ PostItemAttribute?}
+// patt block Item
+pattBlockItem = { Identifier ~ MetaVariableDeclList? ~ Assign ~ PreItemAttribute? ~ RustItem ~ PostItemAttribute? }
 
 // RPL Blocks
-pattBlock = {
-    kw_patt ~ LeftBrace ~ (pattBlockItem)* ~ RightBrace
+pattBlock =  {
+    kw_patt ~ LeftBrace ~ (UsePath)* ~ (pattBlockItem)* ~ RightBrace
 }
-utilBlock = {
-    kw_util ~ LeftBrace ~ (pattBlockItem)* ~ RightBrace
+utilBlock =  {
+    kw_util ~ LeftBrace ~ (UsePath)* ~ (pattBlockItem)* ~ RightBrace
 }
-Block = _{ pattBlock | utilBlock }
+Block     = _{ pattBlock | utilBlock }
 
 // RPL Header
 RPLHeader = { kw_pattern ~ Identifier }
@@ -261,7 +538,3 @@ RPLPattern = { RPLHeader ~ Block* }
 
 // RPL File entry
 main = { SOI ~ RPLPattern ~ EOI }
-
-
-
-
