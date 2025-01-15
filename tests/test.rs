@@ -26,9 +26,11 @@ fn main() {
 pattern CVE-2018-21000
 
 patt {
-    _ = $A
-    _ = $B
+    p[
+       $T: ty,
+       $I: ty 
+    ] = #[mir] fn _ (..) -> _ ; #~[unsafe]
 }
 "
-    )
+    );
 }
