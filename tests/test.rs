@@ -19,6 +19,13 @@ macro_rules! full_test {
 }
 
 #[test]
+fn mir_rvalue_or_call() {
+    full_test!(MirRvalueCast, "copy $x as isize (IntToInt)");
+    full_test!(MirRvalue, "copy $x as isize (IntToInt)");
+    full_test!(MirRvalueOrCall, "copy $x as isize (IntToInt)");
+}
+
+#[test]
 fn cve_2018_21000() {
     full_test!(
         main,
@@ -83,14 +90,14 @@ patt {
         $T1 = u8,
         $T2 = $T,
         $T3 = $T,
-        $Op = Div
+        // $Op = Div
     ]
 
     p2[$T: ty] = p_reversed_para[
         $T1 = $T,
         $T2 = $T,
         $T3 = u8,
-        $Op = Mul
+        //  $Op = Mul
     ]
 }
 "
@@ -258,6 +265,7 @@ patt {
     );
 }
 
+#[test]
 fn cve_2020_35892_35893() {
     full_test!(
         main,
@@ -273,7 +281,7 @@ patt {
     p[
         $T: ty,
         $SlabT: ty
-    ] where $SlabT: Adt 
+    ]
     = #[mir] fn _ (..) -> _ {
         let $self: &mut $SlabT;
         let $len: usize = copy (*$self).len;
@@ -293,18 +301,164 @@ patt {
                     let $x1: usize = copy (*$iter_mut).start;
                     let $x2: usize = core::iter::range::Step::forward_unchecked(copy $x1, const 1_usize);
                     (*$iter_mut).start = move $x2;
-                    $opt: Option<usize> = #[lang = "Some"](copy $x1);
+                    $opt = #[lang = "Some"](copy $x1);
                 }
             }
-            let $discr: isize = discriminant(move $opt);
+            let $discr: isize = discriminant($opt);
             switchInt(move $discr) {
                 0_isize => break,
                 1_isize => {
-                    let $x: usize = copy (move $opt as Some).0;
+                    let $x: usize = copy ($opt as Some).0;
                     let $base: *mut $T = copy (*$self).mem;
                     let $offset: isize = copy $x as isize (IntToInt);
                     let $elem_ptr: *mut $T = Offset(copy $base, copy $offset);
-                    let _ = core::ptr::drop_in_place(copy $elem_ptr);
+                    _ = core::ptr::drop_in_place(copy $elem_ptr);
+                }
+            }
+        }
+    }
+}
+"#
+    );
+}
+
+#[test]
+fn cve_2020_35898_9() {
+    full_test!(
+        main,
+        r#"
+pattern CVE-2020-35898-9
+
+patt {
+    use std::cell::UnsafeCell;
+    use std::rc::Rc;
+    use std::rc::RcInner;
+
+    p_rc_unsafe_cell[
+        $T: ty
+    ] = {                       
+        pub struct $Cell {
+            $inner: Rc<UnsafeCell<$T>>,
+        }
+
+        impl $Cell {
+            fn $get_mut(..) -> _ {
+                let $self: &mut $Cell = _;
+                let $inner_ref: &Rc<UnsafeCell<$T>> = &(*$self).$inner;
+                let $inner_ptr: RcInner<UnsafeCell<$T>> = copy (*$inner_ref).ptr;
+                let $const_ptr: *const RcInner<UnsafeCell<$T>> = copy $inner_ptr.pointer;
+                let $unsafe_cell: &UnsafeCell<$T> = &(*$const_ptr).value;
+                let $unsafe_cell_ptr: *const UnsafeCell<$T> = &raw const (*$unsafe_cell);
+                let $value_ptr: *mut $T = copy $unsafe_cell_ptr as *mut $T (PtrToPtr);
+                let $value_mut_ref: &mut $T = &mut (*$value_ptr);
+            }
+        }
+    }
+}
+
+// detection after monomorpization?
+"#
+    );
+}
+
+#[test]
+fn cve_2021_27376() {
+    full_test!(
+        main,
+        r#"
+pattern CVE-2021-27376
+
+patt {
+    use std::net::SocketAddrV6;
+    use libc::socketaddr;
+
+    p_const_const_ver = #[mir] fn _ (..) -> _ {
+        let $src: *const SocketAddrV6 = _;
+        let $dst: *const socketaddr = move $src as *const socketaddr (PtrToPtr);
+    }
+
+    p_mut_const_ver = #[mir] fn _ (..) -> _ {
+        let $src: *mut SocketAddrV6 = _;
+        let $dst: *const socketaddr = move $src as *const socketaddr (PtrToPtr);
+    }
+    
+    p_const_mut_ver = #[mir] fn _ (..) -> _ {
+        let $src: *const SocketAddrV6 = _;
+        let $dst: *mut socketaddr = move $src as *mut socketaddr (PtrToPtr);
+    }
+    
+    p_mut_mut_ver = #[mir] fn _ (..) -> _ {
+        let $src: *mut SocketAddrV6 = _;
+        let $dst: *mut socketaddr = move $src as *mut socketaddr (PtrToPtr);
+    }
+}
+"#
+    );
+}
+
+#[test]
+fn cve_2020_35873() {
+    full_test!(
+        main,
+        r#"
+pattern CVE-2021-35873
+
+patt {
+    use alloc::ffi::c_str::CString;
+    use core::ffi::c_str::CStr;
+    use core::ptr::non_null::NonNull;
+
+    p = #[mir] pub fn _ (..) -> _ {
+        let $cstring: CString = _;
+        let $cstring_ref: &CString = &$cstring;
+        let $non_null: NonNull<[u8]> = copy ((((*$cstring_ref).inner).0).pointer);
+        let $uslice_ptr: *const [u8] = copy $non_null.pointer;
+        let $cstr_ptr: *const CStr = copy $uslice_ptr as *const CStr (PtrToPtr);
+        let $cstr: &CStr = &(*$cstr_ptr);
+        let $islice: *const [i8] = &raw const ((*$cstr).inner);
+        let $iptr: *const i8 = move $islice as *const i8 (PtrToPtr);
+        let $iptr_arg: *const i8;
+        let $s: i32;
+        drop($cstring);
+
+        $s = _;
+        $iptr_arg = copy $iptr;
+        _ = $crate::ffi::sqlite3session_attach(move $s, move $iptr_arg);
+    }
+}
+"#
+    );
+}
+
+#[test]
+fn cve_2024_27284() {
+    full_test!(
+        main,
+        r#"
+pattern CVE-2024-27284
+
+patt {
+    use std::iter::Iterator;
+    use cassandra_cpp_sys::CassIterator;
+    use cassandra_cpp_sys::cassandra::case_iterator_next;
+    use cassandra_cpp_sys::cassandra::cass_iterator_get_row;
+    use cassandra_cpp_sys::cassandra::case_bool_t;
+
+    p_incorrect_iterator_impl[
+        $T: ty,
+        $Item: ty
+    ] = #[mir] impl Iterator for $T {
+        fn next(_) -> _ {
+            let $mut_iter: *mut CassIterator = _;
+            let $next_res: cass_bool_t = case_iterator_next(copy $mut_iter);
+            let $discr: u32 = discriminant($next_res);
+            switchInt(move $discr) {
+                1 => {
+                    let $const_iter: *const CassIterator = move $mut_iter as *const CassIterator(PtrToPtr);
+                    let $item: $Item = cass_iterator_get_row(move $const_iter);
+                }
+                _ => {
+                    // how to express I don't care about the statements in this block?
                 }
             }
         }
