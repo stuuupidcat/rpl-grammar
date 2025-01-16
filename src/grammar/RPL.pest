@@ -4,12 +4,11 @@ kw_pattern = @{ "pattern" ~ !WordFollowing }
 kw_patt    = @{ "patt" ~ !WordFollowing }
 kw_util    = @{ "util" ~ !WordFollowing }
 
-
 // Reserved words
-kw_cstr    = @{ "cstr" ~ !WordFollowing }
-kw_diag    = @{ "diag" ~ !WordFollowing }
-kw_meta    = @{ "meta" ~ !WordFollowing }
-kw_import  = @{ "import" ~ !WordFollowing }
+kw_cstr   = @{ "cstr" ~ !WordFollowing }
+kw_diag   = @{ "diag" ~ !WordFollowing }
+kw_meta   = @{ "meta" ~ !WordFollowing }
+kw_import = @{ "import" ~ !WordFollowing }
 
 // Rust Keywords
 kw_self         = @{ "self" ~ !WordFollowing }
@@ -52,6 +51,15 @@ kw_Ctor         = @{ "Ctor" ~ !WordFollowing }
 kw_from         = @{ "from" ~ !WordFollowing }
 kw_of           = @{ "of" ~ !WordFollowing }
 kw_raw          = @{ "raw" ~ !WordFollowing }
+kw_drop         = @{ "drop" ~ !WordFollowing }
+kw_break        = @{ "break" ~ !WordFollowing }
+kw_continue     = @{ "continue" ~ !WordFollowing }
+kw_loop         = @{ "loop" ~ !WordFollowing }
+kw_switchInt    = @{ "switchInt" ~ !WordFollowing }
+kw_true         = @{ "true" ~ !WordFollowing }
+kw_false        = @{ "false" ~ !WordFollowing }
+kw_unsafe       = @{ "unsafe" ~ !WordFollowing }
+kw_pub          = @{ "pub" ~ !WordFollowing }
 
 // Space and Comment
 COMMENT    = _{ "//" ~ (!(NEWLINE) ~ ANY)* | "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
@@ -76,15 +84,16 @@ Colon2       = @{ "::" }
 SemiColon    = @{ ";" }
 Hash         = @{ "#" }
 
-Tilde        = @{ "~" }
-And          = @{ "&" }
-HashTilde    = @{ Hash ~ Tilde }
-Bang         = @{ "!" }
-Star         = @{ "*" }
-Arrow        = @{ "->" }
-Quote        = @{ "'" }
-Quote2       = @{ "\"" }
-At           = @{ "@" }
+Tilde      = @{ "~" }
+And        = @{ "&" }
+HashTilde  = @{ Hash ~ Tilde }
+Bang       = @{ "!" }
+Star       = @{ "*" }
+Arrow      = @{ "->" }
+RightArrow = @{ "=>" }
+Quote      = @{ "'" }
+Quote2     = @{ "\"" }
+At         = @{ "@" }
 
 // place holder
 PlaceHolder = @{ "_" }
@@ -93,17 +102,23 @@ PlaceHolder = @{ "_" }
 Literal = @{
     Integer
   | String
+  | Bool
 }
 
+// FIXME
 Integer = ${
     (("0x" ~ ('0'..'9' | 'a'..'f' | 'A'..'F')+) | ('0'..'9')+) ~ !(WordFollowing | Dot ~ ('0'..'9'))
 }
 String  = @{
     "\"" ~ (!"\"" ~ ANY)* ~ "\""
 }
+Bool    = @{
+    kw_true
+  | kw_false
+}
 
 // Identifier/ Word Related
-WordLeading   = @{ 'a' .. 'z' | 'A' .. 'Z' | '\u{4e00}'..'\u{9FA5}' }
+WordLeading   = @{ 'a' .. 'z' | 'A' .. 'Z' | '\u{4e00}'..'\u{9FA5}' | '_'..'_' }
 WordFollowing = @{ WordLeading | "_" | "-" | '0' .. '9' }
 Word          = @{ WordLeading ~ (WordFollowing)* }
 
@@ -112,14 +127,25 @@ Identifier   = @{ Word }
 MetaVariable = @{ Dollar ~ Word }
 
 // MetaVariable Declaration
-MetaVariableDecl     = { MetaVariable ~ Colon ~ Identifier }
-MetaVariableDeclList = {
-    LeftBracket ~ (MetaVariableDecl ~ Comma)* ~ MetaVariableDecl ~ Comma? ~ RightBracket
+MetaVariableDecl       = { MetaVariable ~ Colon ~ Identifier }
+MetaVariableDeclList   = {
+    LeftBracket ~ MetaVariableDecl ~ (Comma ~ MetaVariableDecl)* ~ Comma? ~ RightBracket
+}
+MetaVariableAssign     = { MetaVariable ~ Assign ~ (Identifier | MetaVariable) }
+MetaVariableAssignList = {
+    LeftBracket ~ MetaVariableAssign ~ (Comma ~ MetaVariableAssign)* ~ Comma? ~ RightBracket
 }
 
 // Attributes
-PreItemAttribute  = { Hash ~ LeftBracket ~ (Word ~ Comma)* ~ Word ~ Comma? ~ RightBracket }
-PostItemAttribute = { HashTilde ~ LeftBracket ~ (Word ~ Comma)* ~ Word ~ Comma? ~ RightBracket }
+Attribute         = {
+    (Word ~ Assign ~ Word)
+   | Word
+}
+AttributeList     = {
+    LeftBracket ~ Attribute ~ (Comma ~ Attribute)* ~ Comma? ~ RightBracket
+}
+PreItemAttribute  = { Hash ~ AttributeList }
+PostItemAttribute = { HashTilde ~ AttributeList }
 
 // Rust Items
 
@@ -181,7 +207,7 @@ GenericArgument = {
 }
 
 AngleBracketedGenericArguments = {
-    Colon2? ~ LessThan ~ (GenericArgument ~ Comma)* ~ GenericArgument ~ Comma? ~ GreaterThan
+    Colon2? ~ LessThan ~ GenericArgument ~ (Comma ~ GenericArgument)* ~ Comma? ~ GreaterThan
 }
 
 LangItemWithArgs = {
@@ -217,7 +243,7 @@ TypeSlice = {
 }
 
 TypeTuple = {
-    LeftParen ~ (Type ~ Comma)* ~ Type ~ Comma? ~ RightParen
+    LeftParen ~ Type? ~ (Comma ~ Type)* ~ Comma? ~ RightParen
 }
 
 TypeMetaVariable = {
@@ -294,14 +320,13 @@ MirPlaceDowncast = {
 }
 
 MirBasicPlace = {
-    MirLocalDecl
+    MirPlaceLocal
   | MirPlaceParen
   | MirPlaceDeref
 }
 
 MirPlaceSuffix = {
-  
-  | MirPlaceField
+    MirPlaceField
   | MirPlaceIndex
   | MirPlaceConstIndex
   | MirPlaceSubslice
@@ -406,11 +431,11 @@ MirRvalueDiscriminant = {
 }
 
 MirAggregateArray = {
-    LeftBracket ~ (MirOperand ~ Comma)* ~ MirOperand ~ Comma? ~ RightBracket
+    LeftBracket ~ MirOperand ~ (Comma ~ MirOperand)* ~ Comma? ~ RightBracket
 }
 
 MirAggregateTuple = {
-    LeftParen ~ (MirOperand ~ Comma)* ~ MirOperand ~ Comma? ~ RightParen
+    LeftParen ~ MirOperand ~ (Comma ~ MirOperand)* ~ Comma? ~ RightParen
 }
 
 PathOrLangItem = {
@@ -423,11 +448,11 @@ MirAggregateAdtStructField = {
 }
 
 MirAggregateAdtStruct = {
-    PathOrLangItem ~ LeftBrace ~ (MirAggregateAdtStructField ~ Comma)* ~ MirAggregateAdtStructField ~ Comma? ~ RightBrace
+    PathOrLangItem ~ LeftBrace ~ MirAggregateAdtStructField ~ (Comma ~ MirAggregateAdtStructField)* ~ Comma? ~ RightBrace
 }
 
 MirAggregateAdtTuple = {
-    Hash ~ LeftBracket ~ kw_Ctor ~ RightBracket ~ Path ~ LeftParen ~ (MirOperand ~ Comma)* ~ MirOperand ~ Comma? ~ RightParen
+    Hash ~ LeftBracket ~ kw_Ctor ~ RightBracket ~ Path ~ LeftParen ~ MirOperand ~ (Comma ~ MirOperand)* ~ Comma? ~ RightParen
 }
 
 MirAggregateAdtUnit = {
@@ -449,12 +474,12 @@ MirRvalueAggregate = {
 
 MirRvalue = {
     PlaceHolder
+  | MirRvalueCast
   | MirRvalueUse
   | MirRvalueRepeat
   | MirRvalueRef
   | MirRvalueRawPtr
   | MirRvalueLen
-  | MirRvalueCast
   | MirRvalueBinOp
   | MirRvalueNullOp
   | MirRvalueUnOp
@@ -464,20 +489,20 @@ MirRvalue = {
 }
 
 MirFnOprand = {
-    (MirOperandCopy ~ Comma)* ~ MirOperandCopy ~ Comma? ~ RightParen
-  | (MirOperandMove ~ Comma)* ~ MirOperandMove ~ Comma? ~ RightParen
+    MirOperandCopy ~ (Comma ~ MirOperandCopy)* ~ Comma? ~ RightParen
+  | MirOperandMove ~ (Comma ~ MirOperandMove)* ~ Comma? ~ RightParen
   | TypePath
   | LangItemWithArgs
   | MetaVariable
 }
 
 MirCall = {
-    MirFnOprand ~ LeftParen ~ (MirOperand ~ Comma)* ~ MirOperand ~ Comma? ~ RightParen
+    MirFnOprand ~ LeftParen ~ MirOperand ~ (Comma ~ MirOperand)* ~ Comma? ~ RightParen
 }
 
 MirRvalueOrCall = {
-    MirRvalue
-  | MirCall
+    MirCall
+  | MirRvalue
 }
 
 MirTypeDecl = {
@@ -497,12 +522,70 @@ MirDecl = {
   | MirLocalDecl
 }
 
+MirCallIgnoreRet = {
+    PlaceHolder ~ Assign ~ MirCall
+}
+
+MirDrop = {
+    kw_drop ~ LeftParen ~ MirPlace ~ RightParen
+}
+
+Label = {
+    Quote ~ Identifier
+}
+
+MirControl = {
+    (kw_break | kw_continue) ~ Label?
+}
+
+MirStmtBlock = {
+    LeftBrace ~ (MirStmt)* ~ RightBrace
+}
+
+MirLoop = {
+    (Label ~ Colon) ~ kw_loop ~ MirStmtBlock
+}
+
+MirSwitchValue = {
+    Bool
+  | Integer
+}
+
+// A MirStmt without SemiColon
+MirSwitchBody = {
+    MirStmtBlock
+  | (MirCallIgnoreRet | MirDrop | MirControl | MirAssign) ~ Comma
+  | MirLoop
+  | MirSwitchInt
+}
+
+MirSwitchTarget = {
+    MirSwitchValue ~ RightArrow ~ MirSwitchBody
+}
+
+MirSwitchInt = {
+    kw_switchInt ~ LeftParen ~ MirOperand ~ RightParen ~ LeftBrace ~ (MirSwitchTarget)* ~ RightBrace
+}
+
+MirAssign = {
+    MirPlace ~ Assign ~ MirRvalueOrCall
+}
+
+MirStmt = {
+    MirCallIgnoreRet ~ SemiColon
+  | MirDrop ~ SemiColon
+  | MirControl ~ SemiColon
+  | MirAssign ~ SemiColon
+  | MirLoop
+  | MirSwitchInt
+}
+
 MirBody = {
-    (MirDecl)* // ~ (MirStmt)*
+    (MirDecl)* ~ (MirStmt)*
 }
 
 FnSig = {
-    kw_fn ~ (Identifier | PlaceHolder) ~ LeftParen ~ (FnParam ~ Comma)* ~ FnParam ~ Comma? ~ RightParen ~ FnRet
+    kw_unsafe? ~ kw_pub? ~ kw_fn ~ (Identifier | PlaceHolder) ~ LeftParen ~ FnParam? ~ (Comma ~ FnParam)* ~ Comma? ~ RightParen ~ FnRet
 }
 
 FnBody = {
@@ -519,7 +602,9 @@ Fn = { FnSig ~ FnBody }
 RustItem = { Fn }
 
 // patt block Item
-pattBlockItem = { Identifier ~ MetaVariableDeclList? ~ Assign ~ PreItemAttribute? ~ RustItem ~ PostItemAttribute? }
+pattBlockItem = {
+    Identifier ~ MetaVariableDeclList? ~ Assign ~ PreItemAttribute? ~ (RustItem | (Identifier ~ MetaVariableAssignList)) ~ PostItemAttribute?
+}
 
 // RPL Blocks
 pattBlock =  {
